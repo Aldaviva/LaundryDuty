@@ -5,6 +5,8 @@ VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LaundryDuty", "LaundryDuty\LaundryDuty.csproj", "{A1C01612-A18B-41B3-A540-BAB5EAB5A065}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{BB28137D-D4B8-4717-A5A4-292319C6CA93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{A1C01612-A18B-41B3-A540-BAB5EAB5A065}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1C01612-A18B-41B3-A540-BAB5EAB5A065}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1C01612-A18B-41B3-A540-BAB5EAB5A065}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB28137D-D4B8-4717-A5A4-292319C6CA93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB28137D-D4B8-4717-A5A4-292319C6CA93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB28137D-D4B8-4717-A5A4-292319C6CA93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB28137D-D4B8-4717-A5A4-292319C6CA93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

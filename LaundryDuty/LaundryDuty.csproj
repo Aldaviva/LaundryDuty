@@ -11,20 +11,26 @@
         <RollForward>major</RollForward>
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <UserSecretsId>dotnet-LaundryDuty-bb96ba0d-ab55-4f6a-8922-202010cc3e4c</UserSecretsId>
-        <PlatformTarget>x64</PlatformTarget>
+        <ApplicationIcon>kenmore500washer.ico</ApplicationIcon>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="kenmore500washer.ico" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="PagerDutyClient" Version="1.0.0" />
-        <PackageReference Include="slf4net.NLog" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="Kasa">
-            <HintPath>..\..\Kasa\Kasa\bin\Debug\netstandard2.0\Kasa.dll</HintPath>
-        </Reference>
+      <Reference Include="Kasa">
+        <HintPath>..\..\Kasa\Kasa\bin\Debug\netstandard2.0\Kasa.dll</HintPath>
+      </Reference>
+      <Reference Include="PagerDuty">
+        <HintPath>..\..\PagerDuty\PagerDuty\bin\Debug\netstandard2.0\PagerDuty.dll</HintPath>
+      </Reference>
     </ItemGroup>
+
 
 </Project>

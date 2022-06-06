@@ -1,42 +1,41 @@
-﻿using PagerDuty.Events;
+﻿using Pager.Duty;
 
 namespace LaundryDuty;
 
 public interface PagerDutyManager {
 
-    string createIncident();
+    Task<string> createIncident();
 
-    void resolveIncident(string dedupKey);
+    Task resolveIncident(string dedupKey);
+
+    Task createChange();
 
 }
 
 public class PagerDutyManagerImpl: PagerDutyManager {
 
-    public PagerDutyManagerImpl(Configuration config) {
-        Environment.SetEnvironmentVariable("ROUTING_KEY", config.pagerDutyRoutingKey);
+    private readonly IPagerDuty pagerDuty;
+
+    public PagerDutyManagerImpl(IPagerDuty pagerDuty) {
+        this.pagerDuty = pagerDuty;
     }
 
-    public string createIncident() {
-        TriggerEvent request = new();
-        request.SetSeverity(EventSeverity.Info);
-        request.SetSummary("The washing machine has finished a load of laundry.");
-        request.SetComponent("washing-machine-00");
-        request.SetGroup("garage-00");
-        request.SetClass("laundry");
-
-        return Pager.EnqueueEvent(request).DedupKey;
+    public Task createChange() {
+        return pagerDuty.Send(new Change("The washing machine is starting a load of laundry."));
     }
 
-    public void resolveIncident(string dedupKey) {
-        Pager.EnqueueEvent(new ResolveEvent { DedupKey = dedupKey });
+    public async Task<string> createIncident() {
+        AlertResponse alertResponse = await pagerDuty.Send(new TriggerAlert(Severity.Info, "The washing machine has finished a load of laundry.") {
+            Class     = "laundry",
+            Component = "washing-machine-00",
+            Group     = "garage-00"
+        });
+
+        return alertResponse.DedupKey;
     }
 
-}
-
-internal class ResolveEvent: Event {
-
-    public ResolveEvent() {
-        Action = EventAction.Resolve.ToString().ToLower();
+    public Task resolveIncident(string dedupKey) {
+        return pagerDuty.Send(new ResolveAlert(dedupKey));
     }
 
 }
