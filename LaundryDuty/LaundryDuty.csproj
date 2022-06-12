@@ -19,17 +19,16 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Kasa" Version="0.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="PagerDuty" Version="0.0.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="Kasa">
-        <HintPath>..\..\Kasa\Kasa\bin\Debug\netstandard2.0\Kasa.dll</HintPath>
-      </Reference>
-      <Reference Include="PagerDuty">
-        <HintPath>..\..\PagerDuty\PagerDuty\bin\Debug\netstandard2.0\PagerDuty.dll</HintPath>
-      </Reference>
+      <None Update="Install service.ps1">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 
