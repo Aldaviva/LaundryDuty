@@ -20,7 +20,7 @@
 
     <ItemGroup>
         <PackageReference Include="Kasa" Version="0.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="PagerDuty" Version="0.0.1" />
     </ItemGroup>
