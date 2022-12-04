@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using FakeItEasy;
 using FluentAssertions;
 using Kasa;
@@ -119,12 +120,20 @@ public class LaundryMonitorTest {
 
         await laundryMonitor.StartAsync(CancellationToken.None);
 
-        // cts.CancelAfter(10 * configuration.pollingIntervalMilliseconds);
-
         await Task.Delay(10 * configuration.pollingIntervalMilliseconds);
         await laundryMonitor.StopAsync(CancellationToken.None);
 
         A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).MustHaveHappenedANumberOfTimesMatching(i => i >= 5);
+    }
+
+    [Fact]
+    public async Task ignoreTcpErrors() {
+        laundryMonitor.state = LaundryMachineState.IDLE;
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).ThrowsAsync(new NetworkException("The TCP socket failed to connect", "192.168.1.100", new SocketException(11011)));
+
+        await laundryMonitor.executeOnce();
+
+        laundryMonitor.state.Should().Be(LaundryMachineState.IDLE);
     }
 
 }

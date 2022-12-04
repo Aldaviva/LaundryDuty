@@ -32,16 +32,20 @@ public class LaundryMonitor: BackgroundService {
     }
 
     internal async Task executeOnce() {
-        int powerMilliwatts = (await outlet.EnergyMeter.GetInstantaneousPowerUsage()).Power;
+        try {
+            int powerMilliwatts = (await outlet.EnergyMeter.GetInstantaneousPowerUsage()).Power;
 
-        LaundryMachineState newState = getNewState(powerMilliwatts, state, config);
+            LaundryMachineState newState = getNewState(powerMilliwatts, state, config);
 
-        if (state != null && state != newState) {
-            await onStateChange(newState);
+            if (state != null && state != newState) {
+                await onStateChange(newState);
+            }
+
+            state = newState;
+            logger.LogDebug("Laundry machine is {state}", state);
+        } catch (NetworkException e) {
+            logger.LogWarning(e, "Kasa outlet {host} is not reachable", outlet.Hostname);
         }
-
-        state = newState;
-        logger.LogDebug("Laundry machine is {state}", state);
     }
 
     internal static LaundryMachineState getNewState(int powerMilliwatts, LaundryMachineState? oldState, Configuration config) {

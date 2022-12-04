@@ -12,7 +12,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<PagerDutyManager, PagerDutyManagerImpl>();
         services.AddSingleton<IKasaOutlet>(s => new KasaOutlet(s.GetRequiredService<Configuration>().outletHostname));
         services.AddSingleton<IPagerDuty>(s => new PagerDuty(s.GetRequiredService<Configuration>().pagerDutyIntegrationKey));
-        services.AddSingleton(s => s.GetRequiredService<IConfiguration>().Get<Configuration>());
+        services.AddSingleton(s => s.GetRequiredService<IConfiguration>().Get<Configuration>()!);
     })
     .Build();
 
