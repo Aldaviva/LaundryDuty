@@ -1,18 +1,24 @@
-using System.Runtime.CompilerServices;
 using Kasa;
 using LaundryDuty;
 using Pager.Duty;
 
-[assembly: InternalsVisibleTo("Tests")]
-
 using IHost host = Host.CreateDefaultBuilder(args)
-    .UseWindowsService(options => options.ServiceName = "LaundryDuty")
-    .ConfigureServices(services => {
+    .UseWindowsService(WindowsService.configureWindowsService)
+    .ConfigureServices((context, services) => {
         services.AddHostedService<LaundryMonitor>();
         services.AddSingleton<PagerDutyManager, PagerDutyManagerImpl>();
-        services.AddSingleton<IKasaOutlet>(s => new KasaOutlet(s.GetRequiredService<Configuration>().outletHostname));
+        services.AddSingleton<IKasaOutlet>(s => {
+            Configuration configuration = s.GetRequiredService<Configuration>();
+            return new KasaOutlet(configuration.outletHostname, new Options {
+                LoggerFactory  = s.GetService<ILoggerFactory>(),
+                MaxAttempts    = configuration.outletMaxAttempts,
+                ReceiveTimeout = TimeSpan.FromMilliseconds(configuration.outletTimeoutMilliseconds),
+                SendTimeout    = TimeSpan.FromMilliseconds(configuration.outletTimeoutMilliseconds),
+                RetryDelay     = TimeSpan.FromMilliseconds(configuration.outletRetryDelayMilliseconds)
+            });
+        });
         services.AddSingleton<IPagerDuty>(s => new PagerDuty(s.GetRequiredService<Configuration>().pagerDutyIntegrationKey));
-        services.AddSingleton(s => s.GetRequiredService<IConfiguration>().Get<Configuration>()!);
+        services.AddSingleton(_ => context.Configuration.Get<Configuration>()!);
     })
     .Build();
 

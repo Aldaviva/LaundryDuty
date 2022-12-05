@@ -4,7 +4,7 @@ namespace LaundryDuty;
 
 public interface PagerDutyManager {
 
-    Task<string> createIncident();
+    Task<string?> createIncident();
 
     Task resolveIncident(string dedupKey);
 
@@ -14,28 +14,43 @@ public interface PagerDutyManager {
 
 public class PagerDutyManagerImpl: PagerDutyManager {
 
-    private readonly IPagerDuty pagerDuty;
+    private readonly IPagerDuty                    pagerDuty;
+    private readonly ILogger<PagerDutyManagerImpl> logger;
 
-    public PagerDutyManagerImpl(IPagerDuty pagerDuty) {
+    public PagerDutyManagerImpl(IPagerDuty pagerDuty, ILogger<PagerDutyManagerImpl> logger) {
         this.pagerDuty = pagerDuty;
+        this.logger    = logger;
     }
 
-    public Task createChange() {
-        return pagerDuty.Send(new Change("The washing machine is starting a load of laundry."));
+    public async Task createChange() {
+        try {
+            await pagerDuty.Send(new Change("The washing machine is starting a load of laundry."));
+        } catch (PagerDutyException e) {
+            logger.LogWarning(e, "Failed to create Change event in PagerDuty");
+        }
     }
 
-    public async Task<string> createIncident() {
-        AlertResponse alertResponse = await pagerDuty.Send(new TriggerAlert(Severity.Info, "The washing machine has finished a load of laundry.") {
-            Class     = "laundry",
-            Component = "washing-machine-00",
-            Group     = "garage-00"
-        });
+    public async Task<string?> createIncident() {
+        try {
+            AlertResponse alertResponse = await pagerDuty.Send(new TriggerAlert(Severity.Info, "The washing machine has finished a load of laundry.") {
+                Class     = "laundry",
+                Component = "washing-machine-00",
+                Group     = "garage-00"
+            });
 
-        return alertResponse.DedupKey;
+            return alertResponse.DedupKey;
+        } catch (PagerDutyException e) {
+            logger.LogWarning(e, "Failed to trigger Alert in PagerDuty");
+            return null;
+        }
     }
 
-    public Task resolveIncident(string dedupKey) {
-        return pagerDuty.Send(new ResolveAlert(dedupKey));
+    public async Task resolveIncident(string dedupKey) {
+        try {
+            await pagerDuty.Send(new ResolveAlert(dedupKey));
+        } catch (PagerDutyException e) {
+            logger.LogWarning(e, "Failed to resolve Alert {dedupKey} in PagerDuty", dedupKey);
+        }
     }
 
 }

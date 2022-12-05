@@ -3,11 +3,12 @@ using FakeItEasy;
 using FluentAssertions;
 using Kasa;
 using LaundryDuty;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Tests;
 
-public class LaundryMonitorTest {
+public class LaundryMonitorTest: IDisposable {
 
     private readonly Configuration configuration = new() {
         minimumActiveMilliwatts     = 750,
@@ -15,12 +16,13 @@ public class LaundryMonitorTest {
         pollingIntervalMilliseconds = 10
     };
 
-    private readonly LaundryMonitor   laundryMonitor;
-    private readonly PagerDutyManager pagerDutyManager = A.Fake<PagerDutyManager>();
-    private readonly IKasaOutlet      outlet           = A.Fake<IKasaOutlet>();
+    private readonly LaundryMonitor           laundryMonitor;
+    private readonly PagerDutyManager         pagerDutyManager = A.Fake<PagerDutyManager>();
+    private readonly IKasaOutlet              outlet           = A.Fake<IKasaOutlet>();
+    private readonly IHostApplicationLifetime hostLifetime     = A.Fake<IHostApplicationLifetime>();
 
     public LaundryMonitorTest() {
-        laundryMonitor = new LaundryMonitor(A.Fake<ILogger<LaundryMonitor>>(), outlet, pagerDutyManager, configuration);
+        laundryMonitor = new LaundryMonitor(A.Fake<ILogger<LaundryMonitor>>(), outlet, pagerDutyManager, configuration, hostLifetime);
     }
 
     public static TheoryData<int, LaundryMachineState?, LaundryMachineState> stateTransitions => new() {
@@ -134,6 +136,58 @@ public class LaundryMonitorTest {
         await laundryMonitor.executeOnce();
 
         laundryMonitor.state.Should().Be(LaundryMachineState.IDLE);
+    }
+
+    [Fact]
+    public async Task ignoreJsonErrors() {
+        laundryMonitor.state = LaundryMachineState.IDLE;
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).ThrowsAsync(new ResponseParsingException("", "", typeof(string), "", new IOException()));
+
+        await laundryMonitor.executeOnce();
+
+        laundryMonitor.state.Should().Be(LaundryMachineState.IDLE);
+    }
+
+    [Fact]
+    public async Task throwFeatureUnavailable() {
+        laundryMonitor.state = LaundryMachineState.IDLE;
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).ThrowsAsync(new FeatureUnavailable("", Feature.EnergyMeter, ""));
+
+        Func<Task> thrower = () => laundryMonitor.executeOnce();
+        await thrower.Should().ThrowAsync<FeatureUnavailable>();
+
+    }
+
+    [Fact]
+    public async Task crashOnFeatureUnavailable() {
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).ThrowsAsync(new FeatureUnavailable("", Feature.EnergyMeter, ""));
+
+        await laundryMonitor.StartAsync(CancellationToken.None);
+
+        Environment.ExitCode.Should().Be(1);
+        A.CallTo(() => hostLifetime.StopApplication()).MustHaveHappened();
+    }
+
+    [Fact]
+    public async Task crashOnUnhandledException() {
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).ThrowsAsync(new Exception("please crash"));
+
+        await laundryMonitor.StartAsync(CancellationToken.None);
+
+        Environment.ExitCode.Should().Be(1);
+        A.CallTo(() => hostLifetime.StopApplication()).MustHaveHappened();
+    }
+
+    [Fact]
+    public async Task exitGracefullyOnCancel() {
+        await laundryMonitor.StartAsync(new CancellationToken(true));
+
+        Environment.ExitCode.Should().Be(0);
+        A.CallTo(() => hostLifetime.StopApplication()).MustNotHaveHappened();
+    }
+
+    public void Dispose() {
+        Environment.ExitCode = 0;
     }
 
 }
