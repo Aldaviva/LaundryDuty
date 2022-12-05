@@ -125,7 +125,7 @@ public class LaundryMonitorTest: IDisposable {
         await Task.Delay(10 * configuration.pollingIntervalMilliseconds);
         await laundryMonitor.StopAsync(CancellationToken.None);
 
-        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).MustHaveHappenedANumberOfTimesMatching(i => i >= 5);
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).MustHaveHappenedANumberOfTimesMatching(i => i >= 4);
     }
 
     [Fact]
