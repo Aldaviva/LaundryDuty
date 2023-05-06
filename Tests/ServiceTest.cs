@@ -1,24 +1,23 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using FluentAssertions;
 using LaundryDuty;
 using Microsoft.Extensions.Hosting;
 
 namespace Tests;
 
-public class ServiceTest: IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object?>> {
+public class ServiceTest: IDisposable {
 
-    private IHost? host;
+    private readonly IServiceHostInterceptor hostInterceptor = new ServiceHostInterceptor();
 
     [Fact]
     public async Task start() {
-        DiagnosticListener.AllListeners.Subscribe(this);
+        hostInterceptor.start();
 
         MethodInfo mainMethod = typeof(Program).GetMethod("<Main>$", BindingFlags.NonPublic | BindingFlags.Static, new[] { typeof(string[]) })!;
 
         Task mainTask = (Task) mainMethod.Invoke(null, new object[] { new[] { "Environment=Test" } })!;
 
-        host?.StopAsync();
+        hostInterceptor.host?.StopAsync();
 
         await mainTask;
     }
@@ -30,26 +29,8 @@ public class ServiceTest: IObserver<DiagnosticListener>, IObserver<KeyValuePair<
         serviceLifetimeOptions.ServiceName.Should().Be("LaundryDuty");
     }
 
-    public void OnCompleted() { }
-
-    public void OnError(Exception error) { }
-
-    public void OnNext(DiagnosticListener listener) {
-        if (listener.Name == "Microsoft.Extensions.Hosting") {
-            listener.Subscribe(this);
-        }
-    }
-
-    public void OnNext(KeyValuePair<string, object?> diagnosticEvent) {
-        switch (diagnosticEvent.Key) {
-            case "HostBuilding":
-                // HostBuilder hostBuilder = (HostBuilder) diagnosticEvent.Value!;
-                // you can add, modify, and remove registered services here
-                break;
-            case "HostBuilt":
-                host = diagnosticEvent.Value as IHost;
-                break;
-        }
+    public void Dispose() {
+        hostInterceptor.Dispose();
     }
 
 }

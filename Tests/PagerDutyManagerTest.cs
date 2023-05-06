@@ -26,7 +26,7 @@ public class PagerDutyManagerTest {
     public async Task createIncident() {
         A.CallTo(() => pagerDuty.Send(A<TriggerAlert>._)).Returns(new AlertResponse { DedupKey = "abc" });
 
-        string? actualDedupKey = await pagerDutyManager.createIncident();
+        string? actualDedupKey = await pagerDutyManager.createIncident(Severity.Info, "The washing machine has finished a load of laundry.", "washing-machine-00");
 
         A.CallTo(() => pagerDuty.Send(A<TriggerAlert>.That.Matches(actual =>
             actual.Summary == "The washing machine has finished a load of laundry." &&
@@ -57,7 +57,7 @@ public class PagerDutyManagerTest {
     public async Task ignoreTriggerAlertFailures() {
         A.CallTo(() => pagerDuty.Send(A<TriggerAlert>._)).ThrowsAsync(new NetworkException("test failure", null));
 
-        string? actualDedupKey = await pagerDutyManager.createIncident();
+        string? actualDedupKey = await pagerDutyManager.createIncident(Severity.Info, "The washing machine has finished a load of laundry.", "washing-machine-00");
         actualDedupKey.Should().BeNull();
     }
 

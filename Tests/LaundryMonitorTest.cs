@@ -5,6 +5,8 @@ using Kasa;
 using LaundryDuty;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Pager.Duty;
+using NetworkException = Kasa.NetworkException;
 
 namespace Tests;
 
@@ -13,7 +15,8 @@ public class LaundryMonitorTest: IDisposable {
     private readonly Configuration configuration = new() {
         minimumActiveMilliwatts     = 750,
         maximumIdleMilliwatts       = 413,
-        pollingIntervalMilliseconds = 10
+        pollingIntervalMilliseconds = 10,
+        outletHostname              = "192.168.1.100"
     };
 
     private readonly LaundryMonitor           laundryMonitor;
@@ -76,33 +79,33 @@ public class LaundryMonitorTest: IDisposable {
 
     [Fact]
     public async Task triggerAlertWhenCompleting() {
-        laundryMonitor.pagerdutyDedupKey.Should().BeNull();
-        A.CallTo(() => pagerDutyManager.createIncident()).Returns("abc");
+        laundryMonitor.pagerDutyLaundryDoneDedupKey.Should().BeNull();
+        A.CallTo(() => pagerDutyManager.createIncident(Severity.Info, "The washing machine has finished a load of laundry.", "washing-machine-00")).Returns("abc");
 
         await laundryMonitor.onStateChange(LaundryMachineState.COMPLETE);
 
-        A.CallTo(() => pagerDutyManager.createIncident()).MustHaveHappened();
-        laundryMonitor.pagerdutyDedupKey.Should().Be("abc");
+        A.CallTo(() => pagerDutyManager.createIncident(Severity.Info, "The washing machine has finished a load of laundry.", "washing-machine-00")).MustHaveHappened();
+        laundryMonitor.pagerDutyLaundryDoneDedupKey.Should().Be("abc");
     }
 
     [Fact]
     public async Task resolveAlertWhenOpening() {
-        laundryMonitor.pagerdutyDedupKey = "abc";
+        laundryMonitor.pagerDutyLaundryDoneDedupKey = "abc";
 
         await laundryMonitor.onStateChange(LaundryMachineState.IDLE);
 
         A.CallTo(() => pagerDutyManager.resolveIncident("abc")).MustHaveHappened();
-        laundryMonitor.pagerdutyDedupKey.Should().BeNull();
+        laundryMonitor.pagerDutyLaundryDoneDedupKey.Should().BeNull();
     }
 
     [Fact]
     public async Task skipResolvingAlertOnBoot() {
-        laundryMonitor.pagerdutyDedupKey = null;
+        laundryMonitor.pagerDutyLaundryDoneDedupKey = null;
 
         await laundryMonitor.onStateChange(LaundryMachineState.IDLE);
 
         A.CallTo(() => pagerDutyManager.resolveIncident(A<string>._)).MustNotHaveHappened();
-        laundryMonitor.pagerdutyDedupKey.Should().BeNull();
+        laundryMonitor.pagerDutyLaundryDoneDedupKey.Should().BeNull();
     }
 
     [Fact]
@@ -184,6 +187,45 @@ public class LaundryMonitorTest: IDisposable {
 
         Environment.ExitCode.Should().Be(0);
         A.CallTo(() => hostLifetime.StopApplication()).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task triggerIncidentWhenOutletOffline() {
+        Thread.Sleep(50); // I don't know why this makes the test stop failing, they're not parallel in the same class anyway, and there's no shared or static state
+
+        laundryMonitor.pagerDutyOutletOfflineDedupKey.Should().BeNull();
+        configuration.outletOfflineDurationBeforeIncidentMilliseconds = 1;
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).ThrowsAsync(new NetworkException("The TCP socket failed to connect", "192.168.1.100", new SocketException(11011)));
+        A.CallTo(() => pagerDutyManager.createIncident(Severity.Error, A<string>._, A<string>._)).Returns("def");
+
+        await laundryMonitor.executeOnce();
+        await laundryMonitor.executeOnce();
+
+        laundryMonitor.pagerDutyOutletOfflineDedupKey.Should().NotBeNull();
+        A.CallTo(() => pagerDutyManager.createIncident(Severity.Error, "The washing machine's Kasa smart outlet has been unreachable for at least 0:00:00.001", "192.168.1.100"))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task resolveIncidentWhenOutletBackOnline() {
+        Thread.Sleep(50); // I don't know why this makes the test stop failing, they're not parallel in the same class anyway, and there's no shared or static state
+        laundryMonitor.pagerDutyOutletOfflineDedupKey.Should().BeNull();
+        configuration.outletOfflineDurationBeforeIncidentMilliseconds = 1;
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).ThrowsAsync(new NetworkException("The TCP socket failed to connect", "192.168.1.100", new SocketException(11011)));
+        A.CallTo(() => pagerDutyManager.createIncident(Severity.Error, A<string>._, A<string>._)).Returns("ghi");
+
+        laundryMonitor.pagerDutyOutletOfflineDedupKey.Should().BeNull();
+        await laundryMonitor.executeOnce(); // failure
+        A.CallTo(() => pagerDutyManager.createIncident(Severity.Error, "The washing machine's Kasa smart outlet has been unreachable for at least 0:00:00.001", "192.168.1.100"))
+            .MustHaveHappenedOnceExactly();
+        laundryMonitor.pagerDutyOutletOfflineDedupKey.Should().NotBeNull();
+
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).Returns(new PowerUsage(0, 0, 0, 0));
+
+        await laundryMonitor.executeOnce(); // success
+
+        A.CallTo(() => pagerDutyManager.resolveIncident("ghi")).MustHaveHappened();
+        laundryMonitor.pagerDutyOutletOfflineDedupKey.Should().BeNull();
     }
 
     public void Dispose() {

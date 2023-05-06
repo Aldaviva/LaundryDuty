@@ -1,4 +1,6 @@
 using Kasa;
+using Pager.Duty;
+using NetworkException = Kasa.NetworkException;
 
 namespace LaundryDuty;
 
@@ -11,7 +13,9 @@ public class LaundryMonitor: BackgroundService {
     private readonly IHostApplicationLifetime hostLifetime;
 
     internal LaundryMachineState? state;
-    internal string?              pagerdutyDedupKey;
+    internal string?              pagerDutyLaundryDoneDedupKey;
+    internal string?              pagerDutyOutletOfflineDedupKey;
+    private  DateTime             mostRecentSuccessfulOutletPoll = DateTime.Now;
 
     public LaundryMonitor(ILogger<LaundryMonitor> logger, IKasaOutlet outlet, PagerDutyManager pagerDutyManager, Configuration config, IHostApplicationLifetime hostLifetime) {
         this.logger           = logger;
@@ -33,13 +37,14 @@ public class LaundryMonitor: BackgroundService {
             Environment.ExitCode = 1;
             hostLifetime.StopApplication();
         } catch (Exception e) {
-            logger.LogError(e, "{Message}", e.Message);
+            logger.LogError(e, "{message}", e.Message);
             Environment.ExitCode = 1;
             hostLifetime.StopApplication();
         }
     }
 
     /// <exception cref="FeatureUnavailable">If the configured smart outlet does not have an energy monitor.</exception>
+    /// <exception cref="OverflowException">if outletOfflineDurationBeforeIncidentMilliseconds is larger than double.maxValue</exception>
     internal async Task executeOnce() {
         try {
             int powerMilliwatts = (await outlet.EnergyMeter.GetInstantaneousPowerUsage()).Power;
@@ -52,6 +57,12 @@ public class LaundryMonitor: BackgroundService {
 
             state = newState;
             logger.LogDebug("Laundry machine is {state}", state);
+
+            mostRecentSuccessfulOutletPoll = DateTime.Now;
+            if (pagerDutyOutletOfflineDedupKey is { } dedupKey) {
+                pagerDutyOutletOfflineDedupKey = null;
+                await pagerDutyManager.resolveIncident(dedupKey);
+            }
         } catch (NetworkException e) {
             logger.LogWarning(e, "Smart outlet {host} is not reachable", e.Hostname);
         } catch (ResponseParsingException e) {
@@ -59,10 +70,18 @@ public class LaundryMonitor: BackgroundService {
                 e.ResponseType.FullName, e.Message);
         } catch (FeatureUnavailable e) {
             if (e.RequiredFeature == Feature.EnergyMeter) {
-                logger.LogError(e, "Kasa outlet {host} is not a model that has a power meter. Models such as EP25, KP125, and KP115 have built-in energy monitoring.", e.Hostname);
+                logger.LogError(e, "Kasa outlet {host} is not a model that has a power meter; models such as EP25, KP125, and KP115 have built-in energy monitoring", e.Hostname);
             }
 
             throw;
+        }
+
+        TimeSpan offlineDurationLimit = TimeSpan.FromMilliseconds(config.outletOfflineDurationBeforeIncidentMilliseconds);
+        TimeSpan offlineDuration      = DateTime.Now - mostRecentSuccessfulOutletPoll;
+        if (offlineDurationLimit > TimeSpan.Zero && offlineDuration > offlineDurationLimit && pagerDutyOutletOfflineDedupKey is null) {
+            pagerDutyOutletOfflineDedupKey = await pagerDutyManager.createIncident(Severity.Error,
+                $"The washing machine's Kasa smart outlet has been unreachable for at least {offlineDurationLimit:g}",
+                config.outletHostname);
         }
     }
 
@@ -85,20 +104,20 @@ public class LaundryMonitor: BackgroundService {
     internal async Task onStateChange(LaundryMachineState newState) {
         switch (newState) {
             case LaundryMachineState.ACTIVE:
-                logger.LogInformation("Started a load of laundry.");
+                logger.LogInformation("Started a load of laundry");
                 await pagerDutyManager.createChange();
-                pagerdutyDedupKey = null;
+                pagerDutyLaundryDoneDedupKey = null;
                 break;
 
             case LaundryMachineState.COMPLETE:
-                logger.LogInformation("Laundry is finished.");
-                pagerdutyDedupKey = await pagerDutyManager.createIncident();
+                logger.LogInformation("Laundry is finished");
+                pagerDutyLaundryDoneDedupKey = await pagerDutyManager.createIncident(Severity.Info, "The washing machine has finished a load of laundry.", "washing-machine-00");
                 break;
 
-            case LaundryMachineState.IDLE when pagerdutyDedupKey is not null:
-                logger.LogInformation("Laundry is being emptied.");
-                await pagerDutyManager.resolveIncident(pagerdutyDedupKey);
-                pagerdutyDedupKey = null;
+            case LaundryMachineState.IDLE when pagerDutyLaundryDoneDedupKey is not null:
+                logger.LogInformation("Laundry is being emptied");
+                await pagerDutyManager.resolveIncident(pagerDutyLaundryDoneDedupKey);
+                pagerDutyLaundryDoneDedupKey = null;
                 break;
 
             default:

@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net6.0-windows</TargetFramework>
         <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-        <Version>0.0.2</Version>
+        <Version>0.1.0</Version>
         <Copyright>© 2023 Ben Hutchison</Copyright>
         <Authors>Ben Hutchison</Authors>
         <Company>Ben Hutchison</Company>

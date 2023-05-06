@@ -4,7 +4,7 @@ namespace LaundryDuty;
 
 public interface PagerDutyManager {
 
-    Task<string?> createIncident();
+    Task<string?> createIncident(Severity severity, string summary, string component);
 
     Task resolveIncident(string dedupKey);
 
@@ -25,16 +25,17 @@ public class PagerDutyManagerImpl: PagerDutyManager {
     public async Task createChange() {
         try {
             await pagerDuty.Send(new Change("The washing machine is starting a load of laundry."));
+            logger.LogDebug("Created change event in PagerDuty");
         } catch (PagerDutyException e) {
             logger.LogWarning(e, "Failed to create Change event in PagerDuty");
         }
     }
 
-    public async Task<string?> createIncident() {
+    public async Task<string?> createIncident(Severity severity, string summary, string component) {
         try {
-            AlertResponse alertResponse = await pagerDuty.Send(new TriggerAlert(Severity.Info, "The washing machine has finished a load of laundry.") {
+            AlertResponse alertResponse = await pagerDuty.Send(new TriggerAlert(severity, summary) {
                 Class     = "laundry",
-                Component = "washing-machine-00",
+                Component = component,
                 Group     = "garage-00"
             });
 
