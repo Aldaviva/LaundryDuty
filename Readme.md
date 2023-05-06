@@ -43,7 +43,7 @@
     <p align="center"><img src=".github/images/outlet.jpg" alt="Washing machine power cord plugged into a Kasa KP125 smart outlet, plugged into a 120V wall outlet" height="240" /></p>
 1. Connect the smart outlet to your Wi-Fi network using the Kasa Android or iOS app.
 1. Get the smart outlet's **IP address** from your router's client or DHCP list, or by running `nmap --open -pT:9999 192.168.0.0/16`.
-    - You may optionally assign an A record to this IP address in DNS, and use it instead of the address.
+    - You may optionally assign an A record to this IP address in DNS, and use it instead of the IP address.
 1. Create an Integration in PagerDuty and get its Integration Key.
     1. Sign into your [PagerDuty account](https://app.pagerduty.com/).
     1. Go to Services › Service Directory.
@@ -62,6 +62,7 @@
     |`outletTimeoutMilliseconds`|`2000`|How long, in milliseconds, to wait to connect to the outlet or receive a response before either retrying or giving up until the next iteration of the polling loop.|
     |`outletMaxAttempts`|`10`|How many times to attempt to connect to the outlet in one iteration of the polling loop if the previous attempts failed before giving up and trying again in the next iteration.|
     |`outletRetryDelayMilliseconds`|`1000`|How long to wait, in milliseconds, between repeated attempts to connect to the outlet in one iteration of the polling loop if the previous attempts failed.|
+    |`outletOfflineDurationBeforeIncidentMilliseconds`|`900000`|How long, in milliseconds, the outlet can be unreachable before a PagerDuty incident is triggered to tell you it's offline. Defaults to `0`, which means never trigger an outlet offline incident.|
     |`Logging.LogLevel.Default`|`"Information"`|Minimum severity of log events to emit. Values are `Trace`, `Debug`, `Information`, `Warning`, `Error`, `Critical`, and `None`.<br>View logs in Event Viewer.|
 
 <a id="power-levels"></a>
