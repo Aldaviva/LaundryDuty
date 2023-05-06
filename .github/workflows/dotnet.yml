@@ -45,7 +45,7 @@ jobs:
         path-to-lcov: Tests/TestResults/coverage.info
 
     - name: Stop if tests failed
-          run: exit $env:TEST_EXIT_CODE
+      run: exit $env:TEST_EXIT_CODE
 
     - name: Publish
       run: dotnet publish ${{ env.ProjectName }} --no-build --configuration Release -p:PublishSingleFile=true --runtime ${{ env.TargetPlatform }} --no-self-contained
