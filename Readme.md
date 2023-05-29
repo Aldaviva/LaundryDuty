@@ -69,7 +69,7 @@
 ### Power levels
 This program relies on detecting the running state of a washing machine by observing its instantaneous wattage being consumed, as exposed by the smart outlet's energy monitoring. The wattage levels of each state require precise fine-tuning and will vary between washing machine models.
 
-The example values given are for a Kenmore 500 Series washing machine. They were derived by writing a program using [Aldaviva/Kasa](https://github.com/Aldaviva/Kasa) to periodically log the current, voltage, and power of the washing machine when it was in each state (**active**, **complete**, and **idle**) to find a pattern in the energy usage. After some spreadsheets and histograms, the following state machine was derived.
+The example values given are for a Kenmore 500 Series washing machine. They were derived by [writing a program](https://github.com/Aldaviva/LaundryDuty/wiki/Outlet-power-logging) using [Aldaviva/Kasa](https://github.com/Aldaviva/Kasa) to periodically log the current, voltage, and power of the washing machine when it was in each state (**active**, **complete**, and **idle**) to find a pattern in the energy usage. After some spreadsheets and histograms, the following state machine was derived.
 
 <p>
 <figure>
