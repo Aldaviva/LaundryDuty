@@ -56,7 +56,7 @@ public class LaundryMonitor: BackgroundService {
             }
 
             state = newState;
-            logger.LogDebug("Laundry machine is {state}", state);
+            logger.LogDebug("Laundry machine is {state}, using {power:N0} mW", state, powerMilliwatts);
 
             mostRecentSuccessfulOutletPoll = DateTime.Now;
             if (pagerDutyOutletOfflineDedupKey is { } dedupKey) {

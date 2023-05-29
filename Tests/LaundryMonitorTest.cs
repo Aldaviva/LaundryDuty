@@ -121,14 +121,22 @@ public class LaundryMonitorTest: IDisposable {
 
     [Fact]
     public async Task loop() {
-        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).Returns(new PowerUsage(10, 120000, 0, 0));
+        const int MIN_EXPECTED_INVOCATIONS = 3;
+
+        using CountdownEvent latch = new(MIN_EXPECTED_INVOCATIONS);
+
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).ReturnsLazily(() => {
+            latch.Signal();
+            return new PowerUsage(10, 120000, 0, 0);
+        });
 
         await laundryMonitor.StartAsync(CancellationToken.None);
 
-        await Task.Delay(10 * configuration.pollingIntervalMilliseconds);
+        latch.Wait(TimeSpan.FromSeconds(30));
+
         await laundryMonitor.StopAsync(CancellationToken.None);
 
-        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).MustHaveHappenedANumberOfTimesMatching(i => i >= 3);
+        A.CallTo(() => outlet.EnergyMeter.GetInstantaneousPowerUsage()).MustHaveHappenedANumberOfTimesMatching(i => i >= MIN_EXPECTED_INVOCATIONS);
     }
 
     [Fact]
