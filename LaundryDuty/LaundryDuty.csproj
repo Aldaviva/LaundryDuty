@@ -11,12 +11,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <RollForward>major</RollForward>
         <ServerGarbageCollection>true</ServerGarbageCollection>
-        <ApplicationIcon>kenmore500washer.ico</ApplicationIcon>
+        <ApplicationIcon>kenmore500washerdial.ico</ApplicationIcon>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="kenmore500washer.ico" />
+        <Content Include="kenmore500washerdial.ico" />
     </ItemGroup>
 
     <ItemGroup>
