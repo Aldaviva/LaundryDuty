@@ -1,3 +1,5 @@
+<p align="center"><strong>Washing Machine</strong> &middot; <a href="https://github.com/Aldaviva/DryerDuty">Dryer</a></p>
+
 <img src="https://raw.githubusercontent.com/Aldaviva/LaundryDuty/master/LaundryDuty/kenmore500washerdial.ico" height="23" alt="Kenmore 500 washer" /> LaundryDuty
 ===
 
