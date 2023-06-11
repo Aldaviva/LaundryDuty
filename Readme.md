@@ -18,6 +18,8 @@
 
 <!-- /MarkdownTOC -->
 
+![Washing machine mode dial](.github/images/readme-header.jpg)
+
 <a id="prerequisites"></a>
 ## Prerequisites
 - [.NET 6 x64 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet) or later
