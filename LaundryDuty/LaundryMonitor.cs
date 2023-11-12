@@ -1,6 +1,5 @@
 using Kasa;
-using Pager.Duty;
-using NetworkException = Kasa.NetworkException;
+using Pager.Duty.Requests;
 
 namespace LaundryDuty;
 

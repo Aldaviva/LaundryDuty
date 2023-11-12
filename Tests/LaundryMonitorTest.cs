@@ -1,12 +1,11 @@
-using System.Net.Sockets;
 using FakeItEasy;
 using FluentAssertions;
 using Kasa;
 using LaundryDuty;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Pager.Duty;
-using NetworkException = Kasa.NetworkException;
+using Pager.Duty.Requests;
+using System.Net.Sockets;
 
 namespace Tests;
 
