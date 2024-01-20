@@ -4,7 +4,7 @@
         <TargetFramework>net6.0-windows</TargetFramework>
         <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
         <Version>0.1.1</Version>
-        <Copyright>© 2023 Ben Hutchison</Copyright>
+        <Copyright>© 2024 Ben Hutchison</Copyright>
         <Authors>Ben Hutchison</Authors>
         <Company>Ben Hutchison</Company>
         <Nullable>enable</Nullable>
@@ -21,9 +21,9 @@
 
     <ItemGroup>
         <PackageReference Include="Kasa" Version="1.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="PagerDuty" Version="1.0.0" />
+        <PackageReference Include="PagerDuty" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>
