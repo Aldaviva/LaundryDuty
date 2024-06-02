@@ -7,7 +7,7 @@
 
 *Notify you when your washing machine has finished a load of laundry by sending a PagerDuty alert.*
 
-<!-- MarkdownTOC autolink="true" bracket="round" autoanchor="true" levels="1,2,3" bullets="1.,-,-,-" -->
+<!-- MarkdownTOC autolink="true" bracket="round" autoanchor="false" levels="1,2,3" bullets="1.,-,-,-" -->
 
 1. [Prerequisites](#prerequisites)
 1. [Installation](#installation)
@@ -15,12 +15,12 @@
     - [Power levels](#power-levels)
 1. [Running](#running)
 1. [Alerts](#alerts)
+1. [Presentation](#presentation)
 
 <!-- /MarkdownTOC -->
 
 ![Washing machine mode dial](.github/images/readme-header.jpg)
 
-<a id="prerequisites"></a>
 ## Prerequisites
 - [.NET 6 x64 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet) or later
 - Windows 10 or Windows Server 2016, or later
@@ -29,7 +29,6 @@
     - Probably works with [EP25](https://www.kasasmart.com/us/products/smart-plugs/kasa-smart-plug-slim-energy-monitoring-ep25) and [KP115](https://www.kasasmart.com/us/products/smart-plugs/kasa-smart-plug-slim-energy-monitoring-kp115) as well
 - [PagerDuty account](https://www.pagerduty.com/sign-up/) (the [free plan](https://www.pagerduty.com/sign-up-free/?type=free) is sufficient)
 
-<a id="installation"></a>
 ## Installation
 1. Download the [latest release](https://github.com/Aldaviva/LaundryDuty/releases/latest) [ZIP file](https://github.com/Aldaviva/LaundryDuty/releases/latest/download/LaundryDuty.zip).
 1. Extract the ZIP file to a folder, such as `C:\Program Files\LaundryDuty\`.
@@ -40,7 +39,6 @@
         & '.\Install service.ps1'
         ```
 
-<a id="configuration"></a>
 ## Configuration
 1. Plug your washing machine's power cord into your Kasa smart outlet.
 1. Plug the smart outlet into a NEMA 5-15-R 120VAC wall outlet.
@@ -69,7 +67,6 @@
     |`outletOfflineDurationBeforeIncidentMilliseconds`|`900000`|How long, in milliseconds, the outlet can be unreachable before a PagerDuty incident is triggered to tell you it's offline. Defaults to `0`, which means never trigger an outlet offline incident.|
     |`Logging.LogLevel.Default`|`"Information"`|Minimum severity of log events to emit. Values are `Trace`, `Debug`, `Information`, `Warning`, `Error`, `Critical`, and `None`.<br>View logs in Event Viewer.|
 
-<a id="power-levels"></a>
 ### Power levels
 This program relies on detecting the running state of a washing machine by observing its instantaneous wattage being consumed, as exposed by the smart outlet's energy monitoring. The wattage levels of each state require precise fine-tuning and will vary between washing machine models.
 
@@ -84,7 +81,6 @@ The example values given are for a Kenmore 500 Series washing machine. They were
 
 A complication is that the transition from complete to idle when the power drops below 413 mW is not symmetric &mdash; the state cannot then change directly from idle to complete without first becoming active again. This is to prevent spurious high power readings when the machine is idle from incorrectly putting it back in the complete state.
 
-<a id="running"></a>
 ## Running
 
 Do any of the following.
@@ -93,7 +89,6 @@ Do any of the following.
 - `sc start LaundryDuty`
 - `Start-Service LaundryDuty`
 
-<a id="alerts"></a>
 ## Alerts
 
 1. When the washing machine becomes active, this program will send a Change event to PagerDuty with the summary
@@ -112,3 +107,13 @@ Do any of the following.
 
 1. When the washing machine's lid is opened after it finishes a load, this program will automatically resolve the previously-created Alert. You can also manually resolve the alert from the PagerDuty web or mobile apps.
     <p align="center"><img src=".github/images/resolved-alert.jpg" alt="Incident timeline in the PagerDuty Android app" height="270" /></p>
+
+## Presentation
+
+I gave a talk about this project during PagerDuty's 2024-02-09 How-To Happy Hour on their [Twitch channel](https://twitch.tv/pagerduty).
+
+- [🎞 Video recording](https://www.youtube.com/watch?v=0Gui4cGQ2ds)
+- [💡 Community spotlight](https://www.pagerduty.com/blog/community-spotlight-ben-hutchison/)
+
+[![Video](https://i.ytimg.com/vi/0Gui4cGQ2ds/hqdefault.jpg)](https://www.youtube.com/watch?v=0Gui4cGQ2ds)
+
