@@ -30,6 +30,7 @@
 
     <ItemGroup>
         <None Update="Install service.ps1" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="..\Readme.md;..\.github*\**" />
     </ItemGroup>
 
     <ItemGroup>
