@@ -22,7 +22,7 @@
 ![Washing machine mode dial](.github/images/readme-header.jpg)
 
 ## Prerequisites
-- [.NET 6 x64 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet) or later
+- [.NET 8 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet) or later
 - Windows 10 or Windows Server 2016, or later
 - [Kasa smart outlet](https://www.kasasmart.com/us/products/smart-plugs) with energy monitoring
     - Tested with [KP125](https://www.kasasmart.com/us/products/smart-plugs/kasa-smart-plug-slim-energy-monitoring-kp125)
