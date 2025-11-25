@@ -1,18 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
     <PropertyGroup>
-        <TargetFramework>net6.0-windows</TargetFramework>
-        <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <Version>0.1.1</Version>
-        <Copyright>© 2024 Ben Hutchison</Copyright>
         <Authors>Ben Hutchison</Authors>
-        <Company>Ben Hutchison</Company>
+        <Copyright>© 2025 $(Authors)</Copyright>
+        <Company>$(Authors)</Company>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RollForward>major</RollForward>
-        <ServerGarbageCollection>true</ServerGarbageCollection>
+        <LangVersion>latest</LangVersion>
+        <RollForward>latestMajor</RollForward>
         <ApplicationIcon>kenmore500washerdial.ico</ApplicationIcon>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <SelfContained>false</SelfContained>
+        <DebugType>embedded</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,16 +22,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Kasa" Version="1.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="PagerDuty" Version="1.1.0" />
+        <PackageReference Include="Kasa" Version="1.1.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.1" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+        <PackageReference Include="PagerDuty" Version="1.2.0-beta5" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="Install service.ps1">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        <None Update="Install service.ps1" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,5 +1,8 @@
-﻿namespace LaundryDuty;
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace LaundryDuty;
+
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")] // all properties need to be settable for tests to work, and public for DI config reading to work
 public class Configuration {
 
     public int minimumActiveMilliwatts { get; set; } = 750;

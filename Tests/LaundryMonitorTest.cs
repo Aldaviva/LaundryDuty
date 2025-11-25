@@ -237,6 +237,7 @@ public class LaundryMonitorTest: IDisposable {
 
     public void Dispose() {
         Environment.ExitCode = 0;
+        GC.SuppressFinalize(this);
     }
 
 }

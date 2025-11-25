@@ -3,26 +3,12 @@ using Pager.Duty.Requests;
 
 namespace LaundryDuty;
 
-public class LaundryMonitor: BackgroundService {
-
-    private readonly ILogger<LaundryMonitor>  logger;
-    private readonly IKasaOutlet              outlet;
-    private readonly PagerDutyManager         pagerDutyManager;
-    private readonly Configuration            config;
-    private readonly IHostApplicationLifetime hostLifetime;
+public class LaundryMonitor(ILogger<LaundryMonitor> logger, IKasaOutlet outlet, PagerDutyManager pagerDutyManager, Configuration config, IHostApplicationLifetime hostLifetime): BackgroundService {
 
     internal LaundryMachineState? state;
     internal string?              pagerDutyLaundryDoneDedupKey;
     internal string?              pagerDutyOutletOfflineDedupKey;
     private  DateTime             mostRecentSuccessfulOutletPoll = DateTime.Now;
-
-    public LaundryMonitor(ILogger<LaundryMonitor> logger, IKasaOutlet outlet, PagerDutyManager pagerDutyManager, Configuration config, IHostApplicationLifetime hostLifetime) {
-        this.logger           = logger;
-        this.outlet           = outlet;
-        this.pagerDutyManager = pagerDutyManager;
-        this.config           = config;
-        this.hostLifetime     = hostLifetime;
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
         try {
