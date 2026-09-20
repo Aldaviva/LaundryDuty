@@ -26,7 +26,7 @@ jobs:
         domain: ${{ github.repository_owner }}
 
     - name: Restore
-      run: dotnet restore --locked-mode
+      run: dotnet restore --locked-mode --runtime win-x64
 
     - name: Build
       run: dotnet build --no-restore --configuration Release --no-self-contained
